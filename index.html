@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="description" content="A specialized tool for analyzing CBE (Central Bank of Ethiopia) transfer strategies, comparing VISA/CashGo rates with 14% NRNT and 7% Normal accounts.">
+    <meta property="og:title" content="CBE Transfer Strategy Analysis Tool">
+    <meta property="og:description" content="Calculate efficiency, exchange rates, and missed interest for international transfers to CBE accounts.">
+    <meta property="og:type" content="website">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CBE Transfer Strategy Analysis</title>
     <style>
@@ -126,6 +130,21 @@
             .input-group { flex-direction: column; align-items: flex-start; gap: 5px; }
             input[type="number"] { width: 100%; box-sizing: border-box; }
         }
+
+        .reset-btn {
+            background: transparent;
+            border: 1px solid var(--accent-purple);
+            color: var(--accent-purple);
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .reset-btn:hover {
+            color: var(--gold);
+            border-color: var(--gold);
+        }
     </style>
 </head>
 <body>
@@ -136,9 +155,12 @@
     <div>
         <h2>
             1. Market & Bank Rates
-            <label class="lock-control">
-                <input type="checkbox" id="lockToggle" onchange="toggleLock()" checked> 🔒 Lock Baseline
-            </label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button class="reset-btn" onclick="resetDefaults()">Reset</button>
+                <label class="lock-control">
+                    <input type="checkbox" id="lockToggle" onchange="toggleLock()" checked> 🔒 Lock
+                </label>
+            </div>
         </h2>
         <div class="input-group">
             <label>EUR/USD Market Rate</label>
@@ -186,6 +208,16 @@
         inputs.forEach(input => {
             input.disabled = isLocked;
         });
+    }
+
+    function resetDefaults() {
+        if (confirm("Reset rates to default values?")) {
+            document.getElementById('eur_usd_kurs').value = "1.18";
+            document.getElementById('cbe_euro_buying').value = "176.5027";
+            document.getElementById('cashgo_usd_base').value = "154.60";
+            document.getElementById('bonus_amount').value = "10.0";
+            calculate();
+        }
     }
 
     function calculate() {
