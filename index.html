@@ -2,10 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="description" content="A specialized tool for analyzing CBE (Central Bank of Ethiopia) transfer strategies, comparing VISA/CashGo rates with 14% NRNT and 7% Normal accounts.">
-    <meta property="og:title" content="CBE Transfer Strategy Analysis Tool">
-    <meta property="og:description" content="Calculate efficiency, exchange rates, and missed interest for international transfers to CBE accounts.">
-    <meta property="og:type" content="website">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CBE Transfer Strategy Analysis</title>
     <style>
@@ -70,8 +66,14 @@
             padding: 8px;
             border-radius: 4px;
             text-align: right;
-            width: 120px;
+            width: 140px;
             transition: all 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 5px rgba(241, 196, 15, 0.3);
         }
 
         input:disabled {
@@ -81,7 +83,6 @@
             cursor: not-allowed;
         }
 
-        /* Toggle Switch Styling */
         .lock-control {
             font-size: 0.8rem;
             display: flex;
@@ -122,13 +123,8 @@
             font-size: 0.9rem;
             line-height: 1.4;
             border-radius: 4px;
-            min-height: 300px;
+            min-height: 200px;
             overflow-x: auto;
-        }
-
-        @media (max-width: 480px) {
-            .input-group { flex-direction: column; align-items: flex-start; gap: 5px; }
-            input[type="number"] { width: 100%; box-sizing: border-box; }
         }
 
         .reset-btn {
@@ -141,9 +137,15 @@
             cursor: pointer;
             margin-left: 10px;
         }
-        .reset-btn:hover {
+        
+        .highlight-label {
             color: var(--gold);
-            border-color: var(--gold);
+            font-weight: bold;
+        }
+
+        @media (max-width: 480px) {
+            .input-group { flex-direction: column; align-items: flex-start; gap: 5px; }
+            input[type="number"] { width: 100%; box-sizing: border-box; }
         }
     </style>
 </head>
@@ -168,31 +170,40 @@
         </div>
         <div class="input-group">
             <label>EUR/ETB Buying Rate</label>
-            <input type="number" id="cbe_euro_buying" class="rate-input" step="0.0001" value="176.5027" disabled>
+            <input type="number" id="cbe_euro_buying" class="rate-input" step="0.0001" value="181.2896" disabled>
         </div>
     </div>
 
     <div>
-        <h2>2. Target Account Type</h2>
-        <div class="radio-group">
-            <label><input type="radio" name="acc_type" value="NRNT" checked> NRNT (14%)</label>
-            <label><input type="radio" name="acc_type" value="Normal"> Normal (7%)</label>
-        </div>
-    </div>
-
-    <div>
-        <h2>3. CashGo Details</h2>
+        <h2>2. CashGo Details</h2>
         <div class="input-group">
             <label>USD/ETB Buying Rate</label>
-            <input type="number" id="cashgo_usd_base" class="rate-input" step="0.01" value="154.60" disabled>
+            <input type="number" id="cashgo_usd_base" class="rate-input" step="0.01" value="156.06" disabled>
         </div>
         <div class="input-group">
             <label>Bonus (ETB per USD)</label>
             <input type="number" id="bonus_amount" class="rate-input" step="0.1" value="10.0" disabled>
         </div>
-        <div class="input-group" style="margin-top: 15px; border-top: 1px dashed var(--accent-purple); padding-top: 15px;">
-            <label><strong>Amount to Send (USD)</strong></label>
-            <input type="number" id="usd_to_send" step="1" value="1000.00" style="border-color: var(--gold);">
+    </div>
+
+    <div>
+        <h2>3. Transfer Calculator</h2>
+        <div class="input-group">
+            <label class="highlight-label">Amount to Send (USD)</label>
+            <input type="number" id="usd_to_send" step="1" value="603" oninput="setLast('usd_to_send')">
+        </div>
+        <div class="input-group">
+            <label class="highlight-label">Bank Deduction (EUR incl. Fee)</label>
+            <input type="number" id="total_eur_input" step="0.01" oninput="setLast('total_eur_input')">
+        </div>
+        <div class="input-group">
+            <label class="highlight-label">Technically Received (ETB)</label>
+            <input type="number" id="birr_rec_input" step="1" oninput="setLast('birr_rec_input')">
+        </div>
+        
+        <div class="radio-group">
+            <label><input type="radio" name="acc_type" value="NRNT" checked onchange="calculate()"> NRNT (14%)</label>
+            <label><input type="radio" name="acc_type" value="Normal" onchange="calculate()"> Normal (7%)</label>
         </div>
     </div>
 
@@ -202,19 +213,22 @@
 </div>
 
 <script>
+    let lastModified = 'usd_to_send';
+
+    function setLast(id) {
+        lastModified = id;
+    }
+
     function toggleLock() {
         const isLocked = document.getElementById('lockToggle').checked;
-        const inputs = document.querySelectorAll('.rate-input');
-        inputs.forEach(input => {
-            input.disabled = isLocked;
-        });
+        document.querySelectorAll('.rate-input').forEach(input => input.disabled = isLocked);
     }
 
     function resetDefaults() {
         if (confirm("Reset rates to default values?")) {
             document.getElementById('eur_usd_kurs').value = "1.18";
-            document.getElementById('cbe_euro_buying').value = "176.5027";
-            document.getElementById('cashgo_usd_base').value = "154.60";
+            document.getElementById('cbe_euro_buying').value = "181.2896";
+            document.getElementById('cashgo_usd_base').value = "156.06";
             document.getElementById('bonus_amount').value = "10.0";
             calculate();
         }
@@ -228,16 +242,34 @@
             const usd_base = parseFloat(document.getElementById('cashgo_usd_base').value);
             const bonus = parseFloat(document.getElementById('bonus_amount').value) || 0;
             const with_bonus = usd_base + bonus;
-            const to_send = parseFloat(document.getElementById('usd_to_send').value);
+            const fee_percent = 0.0185;
             const acc_type = document.querySelector('input[name="acc_type"]:checked').value;
 
-            const eur_p = to_send / visa_rate;
-            const eur_f = eur_p * 0.0185;
-            const total_eur = eur_p + eur_f;
-            
-            const birr_rec = (total_eur / 1.0185) * visa_rate * with_bonus;
+            let to_send_usd, total_eur, birr_rec;
+
+            if (lastModified === 'birr_rec_input') {
+                birr_rec = parseFloat(document.getElementById('birr_rec_input').value) || 0;
+                to_send_usd = birr_rec / with_bonus;
+                total_eur = (to_send_usd / visa_rate) * (1 + fee_percent);
+            } else if (lastModified === 'total_eur_input') {
+                total_eur = parseFloat(document.getElementById('total_eur_input').value) || 0;
+                const eur_p = total_eur / (1 + fee_percent);
+                to_send_usd = eur_p * visa_rate;
+                birr_rec = to_send_usd * with_bonus;
+            } else {
+                to_send_usd = parseFloat(document.getElementById('usd_to_send').value) || 0;
+                const eur_p = to_send_usd / visa_rate;
+                total_eur = eur_p * (1 + fee_percent);
+                birr_rec = to_send_usd * with_bonus;
+            }
+
+            // Update all fields
+            document.getElementById('usd_to_send').value = to_send_usd.toFixed(2);
+            document.getElementById('total_eur_input').value = total_eur.toFixed(2);
+            document.getElementById('birr_rec_input').value = birr_rec.toFixed(0);
+
+            const eur_f = total_eur - (total_eur / (1 + fee_percent));
             const usd_tech = birr_rec / usd_base;
-            
             const eff_eur = birr_rec / total_eur;
             const eff_usd = birr_rec / (total_eur * kurs);
 
@@ -245,51 +277,30 @@
             output += "                    VISA / CASHGO RESULTS                    \n";
             output += "=============================================================\n";
             output += `Visa Forex Rate (approx.)  : ${visa_rate.toFixed(2)} USD/EUR\n`;
-            output += `Bank Deduction             : ${eur_p.toFixed(2)}€ + ${eur_f.toFixed(2)}€ Fee = ${total_eur.toFixed(2)}€\n`;
-            output += `Transferred Amount         : ${birr_rec.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} Birr\n`;
-            output += `Technically Received       : $${usd_tech.toFixed(2)} (incl. bonus)\n`;
-            output += `Efficiency (incl. fees)    : ${eff_eur.toFixed(2)} Birr/€ | ${eff_usd.toFixed(2)} Birr/$\n\n\n`;
+            output += `Bank Deduction             : ${(total_eur - eur_f).toFixed(2)}€ + ${eur_f.toFixed(2)}€ Fee = ${total_eur.toFixed(2)}€\n`;
+            output += `Transferred Amount         : ${birr_rec.toLocaleString(undefined, {minimumFractionDigits: 2})} Birr\n`;
+            output += `Efficiency (incl. fees)    : ${eff_eur.toFixed(2)} Birr/€ | ${eff_usd.toFixed(2)} Birr/$\n\n`;
 
             const bank_fee = 25.0;
-            const bank_p = total_eur - bank_fee;
-            const birr_bank = bank_p * cbe_buy;
+            const birr_bank = (total_eur - bank_fee) * cbe_buy;
+            const diff_birr = birr_rec - birr_bank;
 
             if (acc_type === "NRNT") {
                 output += "=============================================================\n";
                 output += "        OPTION 3: BANK-TO-BANK COMPARISON (14% NRNT)         \n";
                 output += "=============================================================\n";
-                output += `Bank Deduction             : ${bank_p.toFixed(2)}€ + ${bank_fee.toFixed(0)}€ Fee = ${total_eur.toFixed(2)}€\n`;
-                output += `Transferred Amount         : ${birr_bank.toLocaleString(undefined, {minimumFractionDigits: 2})} Birr\n`;
-                
-                const diff_birr = birr_rec - birr_bank;
-                const diff_eur_base = diff_birr / cbe_buy;
-                output += `Value Difference           : ${diff_birr.toLocaleString(undefined, {maximumFractionDigits: 2})} Birr (~${Math.round(diff_eur_base)}€)\n`;
-                output += `Efficiency (incl. fees)    : ${(birr_bank/total_eur).toFixed(2)} Birr/€ | ${(birr_bank / (total_eur * kurs)).toFixed(2)} Birr/$\n\n`;
-                
-                output += `Missed Interest on top of the ${Math.round(diff_eur_base)}€ (Compounded 14%):\n`;
-                for (let y = 1; y <= 8; y++) {
-                    let int_birr = diff_birr * (Math.pow(1.14, y) - 1);
-                    let int_eur = int_birr / 176.5027;
-                    output += ` > Year ${y}: ${int_eur.toLocaleString(undefined, {maximumFractionDigits: 0})}€ (~ ${int_birr.toLocaleString(undefined, {maximumFractionDigits: 0})} Birr)\n`;
-                }
-            } else {
-                output += "=============================================================\n";
-                output += "                OPTION 2: CASHGO (7% Normal)                 \n";
-                output += "=============================================================\n";
-                output += `If the money was sent to the Normal Savings Acc instead\n\n`;
-                output += `Yield Divergence on ${birr_rec.toLocaleString(undefined, {maximumFractionDigits: 0})} Birr (Compounded 14%-7% = 7%):\n`;
-                for (let y = 1; y <= 8; y++) {
-                    let int_birr = birr_rec * (Math.pow(1.14, y) - Math.pow(1.07, y));
-                    let int_eur = int_birr / 176.5027;
-                    output += ` > Year ${y}: ${int_eur.toLocaleString(undefined, {maximumFractionDigits: 0})}€ (~ ${int_birr.toLocaleString(undefined, {maximumFractionDigits: 0})} Birr)\n`;
-                }
+                output += `Direct Bank Transfer Yields: ${birr_bank.toLocaleString()} Birr\n`;
+                output += `CashGo Advantage           : ${diff_birr.toLocaleString()} Birr (~${(diff_birr/cbe_buy).toFixed(0)}€)\n`;
             }
 
             document.getElementById('results').innerText = output;
         } catch (e) {
-            alert("Input Check: " + e);
+            console.error(e);
         }
     }
+    
+    // Initial run
+    calculate();
 </script>
 
 </body>
