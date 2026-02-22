@@ -35,7 +35,7 @@
 
     <div>
         <h2>
-            1. USD Exchange Rate
+            1. Market Rate
             <div style="display: flex; align-items: center; gap: 10px;">
                 <button class="reset-btn" onclick="fetchRate()" id="fetchBtn">Update Rate</button>
                 <label style="font-size: 0.8rem;"><input type="checkbox" id="lockToggle" onchange="toggleLock()" checked> 🔒 Lock</label>
@@ -67,11 +67,11 @@
             <input type="number" id="usd_to_send" value="603" oninput="setLast('usd_to_send')">
         </div>
         <div class="input-group">
-            <label class="highlight-label">Bank Deduction (EUR incl. Fee)</label>
+            <label class="highlight-label">Bank Deduction (EUR)</label>
             <input type="number" id="total_eur_input" oninput="setLast('total_eur_input')">
         </div>
         <div class="input-group">
-            <label class="highlight-label">Technically Received (ETB)</label>
+            <label class="highlight-label">Transferred (ETB)</label>
             <input type="number" id="birr_rec_input" oninput="setLast('birr_rec_input')">
         </div>
         <div style="display: flex; gap: 20px; justify-content: center; margin-top: 10px;">
