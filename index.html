@@ -14,139 +14,17 @@
             --text-white: #ffffff;
             --locked-bg: #1e1433;
         }
-
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-white);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 700px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        h1 {
-            color: var(--gold);
-            font-size: 1.4rem;
-            text-align: center;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-        }
-
-        h2 {
-            color: var(--gold);
-            font-size: 1.1rem;
-            border-bottom: 1px solid var(--btn-purple);
-            padding-bottom: 5px;
-            margin-top: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .input-group {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        input[type="number"] {
-            background: var(--bg-card);
-            border: 1px solid var(--accent-purple);
-            color: white;
-            padding: 8px;
-            border-radius: 4px;
-            text-align: right;
-            width: 140px;
-            transition: all 0.2s;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: var(--gold);
-            box-shadow: 0 0 5px rgba(241, 196, 15, 0.3);
-        }
-
-        input:disabled {
-            background: var(--locked-bg);
-            border-color: #443366;
-            color: #888;
-            cursor: not-allowed;
-        }
-
-        .lock-control {
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: var(--text-white);
-            cursor: pointer;
-        }
-
-        .radio-group {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin: 10px 0;
-        }
-
-        button.run-btn {
-            background-color: var(--btn-purple);
-            color: white;
-            border: none;
-            padding: 15px;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background 0.3s;
-            margin: 10px 0;
-        }
-
-        button.run-btn:hover {
-            background-color: var(--accent-purple);
-        }
-
-        #results {
-            background-color: var(--bg-card);
-            font-family: 'Consolas', 'Courier New', monospace;
-            padding: 15px;
-            white-space: pre;
-            font-size: 0.9rem;
-            line-height: 1.4;
-            border-radius: 4px;
-            min-height: 200px;
-            overflow-x: auto;
-        }
-
-        .reset-btn {
-            background: transparent;
-            border: 1px solid var(--accent-purple);
-            color: var(--accent-purple);
-            font-size: 0.7rem;
-            padding: 2px 8px;
-            border-radius: 3px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-        
-        .highlight-label {
-            color: var(--gold);
-            font-weight: bold;
-        }
-
-        @media (max-width: 480px) {
-            .input-group { flex-direction: column; align-items: flex-start; gap: 5px; }
-            input[type="number"] { width: 100%; box-sizing: border-box; }
-        }
+        body { background-color: var(--bg-main); color: var(--text-white); font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
+        .container { width: 100%; max-width: 700px; display: flex; flex-direction: column; gap: 20px; }
+        h1, h2 { color: var(--gold); }
+        h2 { font-size: 1.1rem; border-bottom: 1px solid var(--btn-purple); padding-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .input-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        input[type="number"] { background: var(--bg-card); border: 1px solid var(--accent-purple); color: white; padding: 8px; border-radius: 4px; text-align: right; width: 140px; }
+        input:disabled { background: var(--locked-bg); color: #888; }
+        .run-btn { background-color: var(--btn-purple); color: white; border: none; padding: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        #results { background-color: var(--bg-card); font-family: monospace; padding: 15px; white-space: pre; border-radius: 4px; }
+        .reset-btn { background: transparent; border: 1px solid var(--accent-purple); color: var(--accent-purple); font-size: 0.7rem; padding: 4px 10px; border-radius: 3px; cursor: pointer; }
+        .highlight-label { color: var(--gold); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -156,21 +34,19 @@
 
     <div>
         <h2>
-            1. Market & Bank Rates
+            1. USD Exchange Rate
             <div style="display: flex; align-items: center; gap: 10px;">
-                <button class="reset-btn" onclick="resetDefaults()">Reset</button>
-                <label class="lock-control">
-                    <input type="checkbox" id="lockToggle" onchange="toggleLock()" checked> 🔒 Lock
-                </label>
+                <button class="reset-btn" onclick="fetchRate()" id="fetchBtn">Update Rate</button>
+                <label style="font-size: 0.8rem;"><input type="checkbox" id="lockToggle" onchange="toggleLock()" checked> 🔒 Lock</label>
             </div>
         </h2>
         <div class="input-group">
             <label>EUR/USD Market Rate</label>
-            <input type="number" id="eur_usd_kurs" class="rate-input" step="0.0001" value="1.18" disabled>
+            <input type="number" id="eur_usd_kurs" class="rate-input" step="0.0001" value="1.1782" disabled oninput="estimateEurEtb()">
         </div>
         <div class="input-group">
-            <label>EUR/ETB Buying Rate</label>
-            <input type="number" id="cbe_euro_buying" class="rate-input" step="0.0001" value="181.2896" disabled>
+            <label>EUR/ETB (Estimated Bank Rate)</label>
+            <input type="number" id="cbe_euro_buying" class="rate-input" step="0.01" value="183.87" disabled>
         </div>
     </div>
 
@@ -178,7 +54,7 @@
         <h2>2. CashGo Details</h2>
         <div class="input-group">
             <label>USD/ETB Buying Rate</label>
-            <input type="number" id="cashgo_usd_base" class="rate-input" step="0.01" value="156.06" disabled>
+            <input type="number" id="cashgo_usd_base" class="rate-input" step="0.01" value="156.06" disabled oninput="estimateEurEtb()">
         </div>
         <div class="input-group">
             <label>Bonus (ETB per USD)</label>
@@ -190,118 +66,112 @@
         <h2>3. Transfer Calculator</h2>
         <div class="input-group">
             <label class="highlight-label">Amount to Send (USD)</label>
-            <input type="number" id="usd_to_send" step="1" value="603" oninput="setLast('usd_to_send')">
+            <input type="number" id="usd_to_send" value="603" oninput="setLast('usd_to_send')">
         </div>
         <div class="input-group">
             <label class="highlight-label">Bank Deduction (EUR incl. Fee)</label>
-            <input type="number" id="total_eur_input" step="0.01" oninput="setLast('total_eur_input')">
+            <input type="number" id="total_eur_input" oninput="setLast('total_eur_input')">
         </div>
         <div class="input-group">
             <label class="highlight-label">Technically Received (ETB)</label>
-            <input type="number" id="birr_rec_input" step="1" oninput="setLast('birr_rec_input')">
-        </div>
-        
-        <div class="radio-group">
-            <label><input type="radio" name="acc_type" value="NRNT" checked onchange="calculate()"> NRNT (14%)</label>
-            <label><input type="radio" name="acc_type" value="Normal" onchange="calculate()"> Normal (7%)</label>
+            <input type="number" id="birr_rec_input" oninput="setLast('birr_rec_input')">
         </div>
     </div>
 
     <button class="run-btn" onclick="calculate()">RUN ANALYSIS</button>
-
-    <div id="results">Results will appear here...</div>
+    <div id="results">Enter values and click Run Analysis...</div>
 </div>
 
 <script>
     let lastModified = 'usd_to_send';
 
-    function setLast(id) {
-        lastModified = id;
-    }
+    function setLast(id) { lastModified = id; }
 
     function toggleLock() {
         const isLocked = document.getElementById('lockToggle').checked;
         document.querySelectorAll('.rate-input').forEach(input => input.disabled = isLocked);
     }
 
-    function resetDefaults() {
-        if (confirm("Reset rates to default values?")) {
-            document.getElementById('eur_usd_kurs').value = "1.18";
-            document.getElementById('cbe_euro_buying').value = "181.2896";
-            document.getElementById('cashgo_usd_base').value = "156.06";
-            document.getElementById('bonus_amount').value = "10.0";
+    async function fetchRate() {
+        const btn = document.getElementById('fetchBtn');
+        btn.innerText = "Fetching...";
+        try {
+            // Switching to Coinbase API for real-time (not 24h cached) data
+            const response = await fetch('https://api.coinbase.com/v2/exchange-rates?currency=EUR');
+            const data = await response.json();
+            
+            // Example: 1.177823
+            const rawRate = parseFloat(data.data.rates.USD); 
+            
+            // "Aufrunden" Logic: 
+            // Rounds to 2 decimal places. 
+            // 1.177823 -> 1.18 (because .78 is followed by .7, which is > 0.5)
+            const roundedRate = Math.round(rawRate * 100) / 100;
+            
+            document.getElementById('eur_usd_kurs').value = roundedRate.toFixed(2);
+            
+            btn.innerText = "Updated (Live)";
+            estimateEurEtb();
             calculate();
+        } catch (e) {
+            btn.innerText = "Error";
+            console.error("Fetch failed:", e);
         }
+    }
+
+    function estimateEurEtb() {
+        const eurUsd = parseFloat(document.getElementById('eur_usd_kurs').value) || 0;
+        const usdEtb = parseFloat(document.getElementById('cashgo_usd_base').value) || 0;
+        // Logic: EUR/ETB = EUR/USD * USD/ETB
+        const estimate = eurUsd * usdEtb;
+        document.getElementById('cbe_euro_buying').value = estimate.toFixed(2);
     }
 
     function calculate() {
-        try {
-            const kurs = parseFloat(document.getElementById('eur_usd_kurs').value);
-            const visa_rate = parseFloat((kurs * 0.966).toFixed(2));
-            const cbe_buy = parseFloat(document.getElementById('cbe_euro_buying').value);
-            const usd_base = parseFloat(document.getElementById('cashgo_usd_base').value);
-            const bonus = parseFloat(document.getElementById('bonus_amount').value) || 0;
-            const with_bonus = usd_base + bonus;
-            const fee_percent = 0.0185;
-            const acc_type = document.querySelector('input[name="acc_type"]:checked').value;
+        const kurs = parseFloat(document.getElementById('eur_usd_kurs').value) || 1.18;
+        const visa_rate = parseFloat((kurs * 0.966).toFixed(2));
+        const cbe_buy = parseFloat(document.getElementById('cbe_euro_buying').value) || 181.29;
+        const usd_base = parseFloat(document.getElementById('cashgo_usd_base').value) || 156.06;
+        const bonus = parseFloat(document.getElementById('bonus_amount').value) || 10;
+        const with_bonus = usd_base + bonus;
+        const fee_percent = 0.0185;
 
-            let to_send_usd, total_eur, birr_rec;
+        let to_send_usd, total_eur, birr_rec;
 
-            if (lastModified === 'birr_rec_input') {
-                birr_rec = parseFloat(document.getElementById('birr_rec_input').value) || 0;
-                to_send_usd = birr_rec / with_bonus;
-                total_eur = (to_send_usd / visa_rate) * (1 + fee_percent);
-            } else if (lastModified === 'total_eur_input') {
-                total_eur = parseFloat(document.getElementById('total_eur_input').value) || 0;
-                const eur_p = total_eur / (1 + fee_percent);
-                to_send_usd = eur_p * visa_rate;
-                birr_rec = to_send_usd * with_bonus;
-            } else {
-                to_send_usd = parseFloat(document.getElementById('usd_to_send').value) || 0;
-                const eur_p = to_send_usd / visa_rate;
-                total_eur = eur_p * (1 + fee_percent);
-                birr_rec = to_send_usd * with_bonus;
-            }
-
-            // Update all fields
-            document.getElementById('usd_to_send').value = to_send_usd.toFixed(2);
-            document.getElementById('total_eur_input').value = total_eur.toFixed(2);
-            document.getElementById('birr_rec_input').value = birr_rec.toFixed(0);
-
-            const eur_f = total_eur - (total_eur / (1 + fee_percent));
-            const usd_tech = birr_rec / usd_base;
-            const eff_eur = birr_rec / total_eur;
-            const eff_usd = birr_rec / (total_eur * kurs);
-
-            let output = "=============================================================\n";
-            output += "                    VISA / CASHGO RESULTS                    \n";
-            output += "=============================================================\n";
-            output += `Visa Forex Rate (approx.)  : ${visa_rate.toFixed(2)} USD/EUR\n`;
-            output += `Bank Deduction             : ${(total_eur - eur_f).toFixed(2)}€ + ${eur_f.toFixed(2)}€ Fee = ${total_eur.toFixed(2)}€\n`;
-            output += `Transferred Amount         : ${birr_rec.toLocaleString(undefined, {minimumFractionDigits: 2})} Birr\n`;
-            output += `Efficiency (incl. fees)    : ${eff_eur.toFixed(2)} Birr/€ | ${eff_usd.toFixed(2)} Birr/$\n\n`;
-
-            const bank_fee = 25.0;
-            const birr_bank = (total_eur - bank_fee) * cbe_buy;
-            const diff_birr = birr_rec - birr_bank;
-
-            if (acc_type === "NRNT") {
-                output += "=============================================================\n";
-                output += "        OPTION 3: BANK-TO-BANK COMPARISON (14% NRNT)         \n";
-                output += "=============================================================\n";
-                output += `Direct Bank Transfer Yields: ${birr_bank.toLocaleString()} Birr\n`;
-                output += `CashGo Advantage           : ${diff_birr.toLocaleString()} Birr (~${(diff_birr/cbe_buy).toFixed(0)}€)\n`;
-            }
-
-            document.getElementById('results').innerText = output;
-        } catch (e) {
-            console.error(e);
+        if (lastModified === 'birr_rec_input') {
+            birr_rec = parseFloat(document.getElementById('birr_rec_input').value) || 0;
+            to_send_usd = birr_rec / with_bonus;
+            total_eur = (to_send_usd / visa_rate) * (1 + fee_percent);
+        } else if (lastModified === 'total_eur_input') {
+            total_eur = parseFloat(document.getElementById('total_eur_input').value) || 0;
+            const eur_p = total_eur / (1 + fee_percent);
+            to_send_usd = eur_p * visa_rate;
+            birr_rec = to_send_usd * with_bonus;
+        } else {
+            to_send_usd = parseFloat(document.getElementById('usd_to_send').value) || 0;
+            const eur_p = to_send_usd / visa_rate;
+            total_eur = eur_p * (1 + fee_percent);
+            birr_rec = to_send_usd * with_bonus;
         }
-    }
-    
-    // Initial run
-    calculate();
-</script>
 
+        document.getElementById('usd_to_send').value = to_send_usd.toFixed(2);
+        document.getElementById('total_eur_input').value = total_eur.toFixed(2);
+        document.getElementById('birr_rec_input').value = birr_rec.toFixed(0);
+
+        const eur_f = total_eur - (total_eur / (1 + fee_percent));
+        const eff_eur = birr_rec / total_eur;
+
+        let output = `Visa Forex Rate : ${visa_rate.toFixed(2)} USD/EUR\n`;
+        output += `Total Cost      : ${total_eur.toFixed(2)}€ (incl. ${eur_f.toFixed(2)}€ Fee)\n`;
+        output += `Birr Received   : ${birr_rec.toLocaleString()} ETB\n`;
+        output += `Efficiency      : ${eff_eur.toFixed(2)} Birr/€\n\n`;
+        
+        const bank_yield = (total_eur - 25) * cbe_buy;
+        output += `Bank-to-Bank    : ${bank_yield.toLocaleString()} ETB\n`;
+        output += `CashGo Bonus    : ${(birr_rec - bank_yield).toLocaleString()} ETB`;
+
+        document.getElementById('results').innerText = output;
+    }
+</script>
 </body>
 </html>
